@@ -3,15 +3,15 @@ package Galletas;
 import java.util.concurrent.Semaphore;
 
 public class MonstruoGalletas extends Thread {
-    Semaphore repone;
-    Semaphore come;
+    Semaphore almacens;
+    Semaphore espera;
     Semaphore mutex;
     B b;
     int galletascomidas;
 
     public MonstruoGalletas(Semaphore repone, Semaphore come, Semaphore mutex, B b) {
-        this.repone = repone;
-        this.come = come;
+        this.almacens = repone;
+        this.espera = come;
         this.mutex = mutex;
         this.b = b;
         galletascomidas=(int)(Math.random()*10)+1;
@@ -19,31 +19,34 @@ public class MonstruoGalletas extends Thread {
     }
 
     public void run() {
+try {
+
         while (b.repone != 10) {
-            try {
+
+            espera.acquire();
+
+            if (b.galletas <=galletascomidas) {
 
                 mutex.acquire();
-
-            mutex.release();
-
-              mutex.acquire();
-                if (b.galletas < galletascomidas) {
-                    System.out.println("Quiero comerme " + galletascomidas + " pero no quedan me como las que hay " + b.galletas + " ID:" + Thread.currentThread().getId());
-                    b.galletas = 0;
-
-
-                }else{
-                    System.out.println("Entro a comer estas galletas" + galletascomidas + " ID:" + Thread.currentThread().getId());
-                    b.setGalletas(b.getGalletas() - galletascomidas);
-                    repone.release();
-
-
-                }
+                System.out.println("Quiero comerme " + galletascomidas + " pero no quedan me como las que hay " + b.galletas + " ID:" + Thread.currentThread().getId());
+               // b.setGalletas(b.getGalletas() - galletascomidas);
+                b.galletas = 0;
                 mutex.release();
+
+            } else {
+                mutex.acquire();
+                System.out.println("Entro a comer estas galletas" + galletascomidas + " ID:" + Thread.currentThread().getId());
+                b.setGalletas(b.getGalletas() - galletascomidas);
+                mutex.release();
+
+
+            }
+            almacens.release();
+
+        }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
         }
     }
-}

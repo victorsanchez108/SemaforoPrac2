@@ -3,36 +3,41 @@ package Galletas;
 import java.util.concurrent.Semaphore;
 
 public class Almacenero extends Thread{
-    Semaphore repone;
-    Semaphore come;
+    Semaphore almacens;
+    Semaphore espera;
     Semaphore mutex;
     B b;
 
     public Almacenero(Semaphore repone, Semaphore come, Semaphore mutex, B b) {
-        this.repone = repone;
-        this.come = come;
+        this.almacens = repone;
+        this.espera = come;
         this.mutex = mutex;
         this.b = b;
     }
 
     public void run() {
-        while (b.repone != 10) {
-            try {
+        try {
 
-                mutex.acquire();
+            while (b.repone != 10) {
+                almacens.acquire();
+
                 if (b.galletas == 0) {
-                    System.out.println("Repongo las galletas ID:" +Thread.currentThread().getId());
+                    mutex.acquire();
                     b.galletas = 10;
                     b.repone++;
+                    System.out.println("Repongo las galletas ID:" + Thread.currentThread().getId());
+                    mutex.release();
                     System.out.println(b.repone + " Veces");
-                    come.release();
+
+
                 }
-                mutex.release();
-            } catch (Exception e) {
-                e.printStackTrace();
+                espera.release();
             }
 
 
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
-}
+    }
+
