@@ -4,14 +4,14 @@ import java.util.concurrent.Semaphore;
 
 public class MonstruoGalletas extends Thread {
     Semaphore almacens;
-    Semaphore espera;
+    Semaphore galletas;
     Semaphore mutex;
     B b;
     int galletascomidas;
 
     public MonstruoGalletas(Semaphore repone, Semaphore come, Semaphore mutex, B b) {
         this.almacens = repone;
-        this.espera = come;
+        this.galletas = come;
         this.mutex = mutex;
         this.b = b;
         galletascomidas=(int)(Math.random()*10)+1;
@@ -19,34 +19,36 @@ public class MonstruoGalletas extends Thread {
     }
 
     public void run() {
-try {
+        while (b.repone <10) {
+            try {
+              galletas.acquire();
+              mutex.acquire();
+                if (b.galletas <=galletascomidas && b.galletas!=0) {
+                    System.out.println("Quiero comerme " + galletascomidas + " pero no quedan me como las que hay " + b.galletas + " ID:" + Thread.currentThread().getId());
+                    b.galletas = 0;
 
-        while (b.repone != 10) {
+                    if(b.repone ==10){
+                     galletas.release();
+                    }else {
+                        almacens.release();
+                    }
 
-            espera.acquire();
 
-            if (b.galletas <=galletascomidas) {
+                } else if (b.galletas ==0) {
+                    
+                } else{
+                    System.out.println("Entro a comer estas galletas" + galletascomidas + " ID:" + Thread.currentThread().getId());
+                    b.setGalletas(b.getGalletas() - galletascomidas);
+                  galletas.release();
 
-                mutex.acquire();
-                System.out.println("Quiero comerme " + galletascomidas + " pero no quedan me como las que hay " + b.galletas + " ID:" + Thread.currentThread().getId());
-               // b.setGalletas(b.getGalletas() - galletascomidas);
-                b.galletas = 0;
+
+                }
                 mutex.release();
-
-            } else {
-                mutex.acquire();
-                System.out.println("Entro a comer estas galletas" + galletascomidas + " ID:" + Thread.currentThread().getId());
-                b.setGalletas(b.getGalletas() - galletascomidas);
-                mutex.release();
-
-
-            }
-            almacens.release();
-
-        }
+                //almacens.release();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
         }
     }
+}
