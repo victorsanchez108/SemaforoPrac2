@@ -35,7 +35,8 @@ public class MonstruoGalletas extends Thread {
 
 
                 } else if (b.galletas ==0) {
-                    
+                        galletas.release();
+
                 } else{
                     System.out.println("Entro a comer estas galletas" + galletascomidas + " ID:" + Thread.currentThread().getId());
                     b.setGalletas(b.getGalletas() - galletascomidas);
